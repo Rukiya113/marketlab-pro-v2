@@ -1,0 +1,1 @@
+import {ReactNode} from 'react';export default function Panel({title,children,className=''}:{title:string;children:ReactNode;className?:string}){return <section className={'panel '+className}><div className="panelTitle">{title}<span>⋮</span></div>{children}</section>}

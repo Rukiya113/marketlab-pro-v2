@@ -1,0 +1,23 @@
+services:
+  redis:
+    image: redis:7-alpine
+    ports: ["6379:6379"]
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: marketlab
+      POSTGRES_USER: marketlab
+      POSTGRES_PASSWORD: marketlab_local_only
+    ports: ["5432:5432"]
+    volumes:
+      - ./db/schema.sql:/docker-entrypoint-initdb.d/001-schema.sql:ro
+      - marketlab_pg:/var/lib/postgresql/data
+  gateway:
+    build:
+      context: .
+      dockerfile: services/market-gateway/Dockerfile
+    environment:
+      REDIS_URL: redis://redis:6379
+    depends_on: [redis]
+volumes:
+  marketlab_pg:

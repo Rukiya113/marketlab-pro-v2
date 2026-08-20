@@ -1,0 +1,12 @@
+.root{display:flex;flex-direction:column;gap:12px;padding:12px}
+.header{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+.header h1{margin:0;font-size:18px}
+.header p{margin:4px 0 0;font-size:11px;opacity:.65}
+.controls{display:flex;gap:8px;align-items:center}
+.controls select,.controls input,.controls button{padding:7px;border:1px solid var(--border,#d9e3dd);background:var(--surface,#fff);color:inherit;border-radius:4px}
+.panel{border:1px solid var(--border,#d9e3dd);background:var(--surface,#fff);border-radius:5px;overflow:hidden}
+.table{width:100%;border-collapse:collapse;font-size:10px}
+.table th,.table td{text-align:left;padding:8px;border-bottom:1px solid var(--border,#edf2ef);vertical-align:top}
+.kind{font-weight:800;font-size:9px}
+.empty{min-height:180px;display:flex;align-items:center;justify-content:center;text-align:center;opacity:.55;font-size:11px}
+.detail{max-width:420px;white-space:normal}

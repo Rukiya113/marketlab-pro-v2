@@ -1,0 +1,17 @@
+.root{display:flex;flex-direction:column;gap:12px;padding:12px}
+.header{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.header h1{margin:0;font-size:18px}
+.header p{margin:4px 0 0;font-size:11px;opacity:.65}
+.overall{border:1px solid currentColor;padding:5px 9px;border-radius:999px;font-size:10px;font-weight:800}
+.cards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.card,.panel{border:1px solid var(--border,#d9e3dd);background:var(--surface,#fff);border-radius:5px}
+.card{padding:10px}
+.card small{display:block;font-size:9px;opacity:.6;margin-bottom:4px}
+.card b{font-size:12px}
+.panel{overflow:hidden}
+.panel h3{margin:0;padding:10px;font-size:11px;border-bottom:1px solid var(--border,#d9e3dd)}
+.table{width:100%;border-collapse:collapse;font-size:10px}
+.table th,.table td{text-align:left;padding:8px;border-bottom:1px solid var(--border,#edf2ef)}
+.blockers{padding:10px;font-size:11px}
+.blocker{padding:6px 0;border-bottom:1px solid var(--border,#edf2ef)}
+.empty{padding:18px;opacity:.55;text-align:center;font-size:11px}

@@ -1,0 +1,6 @@
+'use client';
+import { useEffect, useState } from 'react';
+import type { CanonicalInstrumentId, CanonicalMarketEvent, CanonicalTick } from '@/lib/market/events';
+import type { IntelligenceStatePayload } from '@/lib/intelligence/serialize';
+export function useMarketStream(){const[ticks,setTicks]=useState<Record<string,CanonicalTick>>({});useEffect(()=>{const es=new EventSource('/api/market/stream');es.onmessage=(event)=>{try{const value=JSON.parse(event.data) as CanonicalMarketEvent;if(value.type==='TICK')setTicks((previous)=>({...previous,[value.instrumentId]:value}));}catch{}};return()=>es.close();},[]);return{ticks};}
+export function useIntelligence(instrumentId:CanonicalInstrumentId){const[state,setState]=useState<IntelligenceStatePayload>({decision:null,opportunity:null,sentinel:null,portfolio:null,updatedAt:Date.now()});useEffect(()=>{let active=true;const load=()=>fetch(`/api/intelligence/state?instrument=${encodeURIComponent(instrumentId)}`,{cache:'no-store'}).then((response)=>response.json()).then((value:IntelligenceStatePayload)=>{if(active)setState(value)}).catch(()=>{});void load();const timer=window.setInterval(load,2000);return()=>{active=false;window.clearInterval(timer)};},[instrumentId]);return state;}

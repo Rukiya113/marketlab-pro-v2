@@ -1,0 +1,4 @@
+'use client';
+import { useIntelligence } from '@/components/hooks';
+import { useWorkstation } from '@/components/WorkstationProvider';
+export default function SentinelPage(){const{instrumentId}=useWorkstation();const{sentinel}=useIntelligence(instrumentId);return <main className="modulePage"><section className="panel"><div className="panelTitle">SENTINEL SAFETY GATES<span>{sentinel?.decision??'BLOCKED'}</span></div>{!sentinel?<div className="xrayEmpty">Sentinel waits for a READY execution intent. Missing evidence is never assumed to pass.</div>:<div className="scannerTable"><div className="scannerRow scannerHead"><span>GATE</span><span>RESULT</span><span>VALUE</span><span>REASON</span></div>{sentinel.checks.map((check)=><div className="scannerRow" key={check.id}><b>{check.label}</b><strong>{check.result}</strong><span>{String(check.value??'—')}</span><small>{check.reason}</small></div>)}</div>}</section></main>}

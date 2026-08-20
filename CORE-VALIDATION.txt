@@ -1,0 +1,3 @@
+Core TypeScript validation: PASS
+Command: tsc --noEmit with strict local market-event shim
+Full Next.js verification must be run in the target MarketLab repository after extraction.

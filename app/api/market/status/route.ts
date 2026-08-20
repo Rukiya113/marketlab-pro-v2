@@ -1,0 +1,3 @@
+import { NextResponse } from 'next/server'; import { createClient } from 'redis';
+export const dynamic='force-dynamic';
+export async function GET(){ if(!process.env.REDIS_URL)return NextResponse.json({state:'OFFLINE',quality:'OFFLINE',reason:'REDIS_NOT_CONFIGURED'}); const c=createClient({url:process.env.REDIS_URL}); try{await c.connect(); const raw=await c.get('marketlab:gateway:status'); return NextResponse.json(raw?JSON.parse(raw):{state:'OFFLINE',quality:'OFFLINE'});}catch{return NextResponse.json({state:'OFFLINE',quality:'OFFLINE',reason:'REDIS_UNAVAILABLE'});}finally{if(c.isOpen)await c.quit();}}

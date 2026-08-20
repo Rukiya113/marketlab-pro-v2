@@ -1,0 +1,3 @@
+import { NextRequest,NextResponse } from 'next/server'; import { createClient } from 'redis';
+export const dynamic='force-dynamic';
+export async function GET(req:NextRequest){if(!process.env.REDIS_URL)return NextResponse.json({candles:[],state:'OFFLINE'}); const instrument=req.nextUrl.searchParams.get('instrument')??'IN:NSE:INDEX:NIFTY50'; const interval=req.nextUrl.searchParams.get('interval')??'1m'; const c=createClient({url:process.env.REDIS_URL}); try{await c.connect();const rows=await c.lRange(`marketlab:candles:${instrument}:${interval}`,0,499);return NextResponse.json({candles:rows.reverse().map(x=>JSON.parse(x)),state:'LIVE'});}catch{return NextResponse.json({candles:[],state:'OFFLINE'});}finally{if(c.isOpen)await c.quit();}}

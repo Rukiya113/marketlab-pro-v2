@@ -1,0 +1,12 @@
+steps:
+- name: gcr.io/cloud-builders/docker
+  args: ['build','-t','${_IMAGE}','.']
+- name: gcr.io/cloud-builders/docker
+  args: ['push','${_IMAGE}']
+- name: gcr.io/google.com/cloudsdktool/cloud-sdk
+  entrypoint: gcloud
+  args: ['run','deploy','marketlab-pro','--image','${_IMAGE}','--region','${_REGION}','--platform','managed','--allow-unauthenticated','--port','8080']
+substitutions:
+  _IMAGE: gcr.io/$PROJECT_ID/marketlab-pro:$COMMIT_SHA
+  _REGION: asia-south1
+images: ['${_IMAGE}']
