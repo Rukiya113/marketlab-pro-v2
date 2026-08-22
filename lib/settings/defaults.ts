@@ -3,7 +3,7 @@ import type { MarketLabSettings } from './types';
 export const DEFAULT_SETTINGS: MarketLabSettings = {
   version: 1,
   general: {
-    theme: 'light',
+    theme: 'dark',
     defaultInstrument: 'IN:NSE:INDEX:NIFTY50',
     defaultTimeframe: '5m',
   },

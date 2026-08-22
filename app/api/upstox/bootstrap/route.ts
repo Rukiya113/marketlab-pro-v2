@@ -1,0 +1,4 @@
+import {NextResponse} from 'next/server';
+import {getSessionState,getToken} from '@/lib/upstox/session';
+export const dynamic='force-dynamic';
+export async function GET(){const state=await getSessionState();if(state!=='CONNECTED')return NextResponse.json({state,connected:false,profile:null});const token=await getToken();if(!token)return NextResponse.json({state:'DISCONNECTED',connected:false,profile:null});try{const r=await fetch('https://api.upstox.com/v2/user/profile',{headers:{Accept:'application/json',Authorization:`Bearer ${token}`},cache:'no-store'});if(!r.ok)return NextResponse.json({state:'REAUTH_REQUIRED',connected:false,profile:null},{status:401});const data=await r.json();return NextResponse.json({state:'CONNECTED',connected:true,profile:data});}catch{return NextResponse.json({state:'ERROR',connected:false,profile:null},{status:502});}}

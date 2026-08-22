@@ -1,7 +1,11 @@
 import {NextRequest,NextResponse} from 'next/server';
 import type {CanonicalInstrumentId} from '@/lib/market/events';
-import type {DerivativeUniverse} from '@/lib/derivatives/types';
-import {getDerivativeUniverse,setDerivativeUniverse} from '@/lib/derivatives/store';
+import {loadDerivativeUniverse} from '@/lib/derivatives/upstox';
+import {getSessionState} from '@/lib/upstox/session';
 export const dynamic='force-dynamic';
-export async function GET(r:NextRequest){const id=(r.nextUrl.searchParams.get('instrument')??'IN:NSE:INDEX:NIFTY50') as CanonicalInstrumentId;return NextResponse.json(getDerivativeUniverse(id),{headers:{'Cache-Control':'no-store'}})}
-export async function POST(r:NextRequest){const universe=await r.json() as DerivativeUniverse;setDerivativeUniverse({...universe,updatedAt:Date.now()});return NextResponse.json({ok:true,count:universe.contracts.length})}
+export async function GET(r:NextRequest){
+ const id=(r.nextUrl.searchParams.get('instrument')??'IN:NSE:INDEX:NIFTY50') as CanonicalInstrumentId;
+ const session=await getSessionState();
+ if(session!=='CONNECTED') return NextResponse.json({underlyingId:id,state:'OFFLINE',contracts:[],updatedAt:Date.now(),runtime:{session,reason:'Connect Upstox to load the live derivative universe.'}},{headers:{'Cache-Control':'no-store'}});
+ try{return NextResponse.json(await loadDerivativeUniverse(id,r.nextUrl.searchParams.get('refresh')==='1'),{headers:{'Cache-Control':'no-store'}})}catch(error){return NextResponse.json({underlyingId:id,state:'OFFLINE',contracts:[],updatedAt:Date.now(),runtime:{session,reason:error instanceof Error?error.message:'Derivative runtime failed.'}},{status:502,headers:{'Cache-Control':'no-store'}})}
+}

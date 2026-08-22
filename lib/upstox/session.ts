@@ -1,51 +1,32 @@
 import { cookies } from 'next/headers';
+import { getGatewayToken, persistGatewayToken, removeGatewayToken } from './token-store';
 
-const TOKEN = 'mlp_upstox_token';
-const ISSUED = 'mlp_upstox_issued_at';
+const TOKEN='mlp_upstox_token';
+const ISSUED='mlp_upstox_issued_at';
 
-/**
- * Upstox V2 access tokens are not refreshable - they expire daily at 03:30 IST
- * regardless of when they were issued. We store the issue time alongside the
- * token so the UI can distinguish "never connected" from "session expired,
- * please reconnect" instead of showing a bare OFFLINE state for both.
- */
-export function nextExpiryFrom(issuedAtMs: number): number {
-  const IST_OFFSET_MS = 5.5 * 60 * 60 * 1000;
-  const issuedIst = new Date(issuedAtMs + IST_OFFSET_MS);
-  const expiryIst = new Date(Date.UTC(issuedIst.getUTCFullYear(), issuedIst.getUTCMonth(), issuedIst.getUTCDate(), 3, 30, 0));
-  if (issuedIst.getUTCHours() > 3 || (issuedIst.getUTCHours() === 3 && issuedIst.getUTCMinutes() >= 30)) {
-    expiryIst.setUTCDate(expiryIst.getUTCDate() + 1);
-  }
-  return expiryIst.getTime() - IST_OFFSET_MS;
+export function nextExpiryFrom(issuedAtMs:number):number{
+  const IST=5.5*60*60*1000;const d=new Date(issuedAtMs+IST);const e=new Date(Date.UTC(d.getUTCFullYear(),d.getUTCMonth(),d.getUTCDate(),3,30,0));
+  if(d.getUTCHours()>3||(d.getUTCHours()===3&&d.getUTCMinutes()>=30))e.setUTCDate(e.getUTCDate()+1);
+  return e.getTime()-IST;
 }
 
-export async function setToken(token: string) {
-  const jar = await cookies();
-  const now = Date.now();
-  const expiresAt = nextExpiryFrom(now);
-  const maxAge = Math.max(60, Math.floor((expiresAt - now) / 1000));
-  const common = { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'lax' as const, path: '/', maxAge };
-  jar.set(TOKEN, token, common);
-  jar.set(ISSUED, String(now), common);
+export async function setToken(token:string){
+  const now=Date.now();const expiresAt=nextExpiryFrom(now);const maxAge=Math.max(60,Math.floor((expiresAt-now)/1000));
+  const jar=await cookies();const common={httpOnly:true,secure:process.env.NODE_ENV==='production',sameSite:'lax' as const,path:'/',maxAge};
+  jar.set(TOKEN,token,common);jar.set(ISSUED,String(now),common);
+  await persistGatewayToken(token,maxAge);
 }
 
-export async function getToken() {
-  return (await cookies()).get(TOKEN)?.value ?? null;
+export async function getToken(){
+  const jar=await cookies();const cookieToken=jar.get(TOKEN)?.value??null;
+  return cookieToken??await getGatewayToken();
 }
 
-export type SessionState = 'DISCONNECTED' | 'CONNECTED' | 'EXPIRED';
-
-export async function getSessionState(): Promise<SessionState> {
-  const jar = await cookies();
-  const token = jar.get(TOKEN)?.value ?? null;
-  if (!token) return 'DISCONNECTED';
-  const issuedAt = Number(jar.get(ISSUED)?.value ?? 0);
-  if (!issuedAt || Date.now() >= nextExpiryFrom(issuedAt)) return 'EXPIRED';
-  return 'CONNECTED';
+export type SessionState='DISCONNECTED'|'CONNECTED'|'EXPIRED';
+export async function getSessionState():Promise<SessionState>{
+  const jar=await cookies();const cookieToken=jar.get(TOKEN)?.value??null;
+  if(cookieToken){const issued=Number(jar.get(ISSUED)?.value??0);if(issued&&Date.now()>=nextExpiryFrom(issued))return 'EXPIRED';return 'CONNECTED';}
+  return (await getGatewayToken())?'CONNECTED':'DISCONNECTED';
 }
 
-export async function clearToken() {
-  const jar = await cookies();
-  jar.delete(TOKEN);
-  jar.delete(ISSUED);
-}
+export async function clearToken(){const jar=await cookies();jar.delete(TOKEN);jar.delete(ISSUED);await removeGatewayToken();}
